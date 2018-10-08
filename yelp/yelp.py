@@ -94,7 +94,7 @@ if __name__=="__main__":
             x = parse(yelp_url,place,x)
 
             print ("Writing data to output file")
-            x.to_csv("yelp_results.csv", index=None, mode='a',header=None)
+            x.to_csv("YelpData.csv", index=None, mode='a',header=None)
             
             sleep(2)
 
