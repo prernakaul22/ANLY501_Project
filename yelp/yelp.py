@@ -8,12 +8,17 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def parse(url,zipcode,df):
+    # request html file
     headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36'}
     response = requests.get(url, headers=headers, verify=False).text
     parser = html.fromstring(response)
+
+    # start parsing data
     print ("Parsing the page")
+    # parse main tree
     listing = parser.xpath("//li[@class='regular-search-result']")
     scraped_datas=[]
+    # parse the elements
     for results in listing:
         raw_position = results.xpath(".//span[@class='indexed-biz-name']/text()")   
         raw_name = results.xpath(".//span[@class='indexed-biz-name']/a//text()")
@@ -25,7 +30,6 @@ def parse(url,zipcode,df):
         is_reservation_available = results.xpath(".//span[contains(@class,'reservation')]")
         is_accept_pickup = results.xpath(".//span[contains(@class,'order')]")
         
-
         name = ''.join(raw_name).strip()
         position = ''.join(raw_position).replace('.','')
         cleaned_reviews = ''.join(raw_review_count).strip()
@@ -40,6 +44,8 @@ def parse(url,zipcode,df):
         address  = ' '.join(' '.join(raw_address).split())
         reservation_available = True if is_reservation_available else False
         accept_pickup = True if is_accept_pickup else False
+
+        # store all values into a dataframe
         df=df.append({
                 'zipcode': zipcode,
                 'business_name':name,
@@ -87,18 +93,19 @@ if __name__=="__main__":
             # set parameter
             rank_num = 30*count
 
+            # set url
             yelp_url  = "https://www.yelp.com/search?find_desc=%s&find_loc=%s&start=%s"%(search_query,place,rank_num)
             
+            # call reqeust function
             print ("Retrieving :",place)
             x = pd.DataFrame(columns = fieldnames)
             x = parse(yelp_url,place,x)
 
+            # store into output file
             print ("Writing data to output file")
             x.to_csv("YelpData.csv", index=None, mode='a',header=None)
             
+            # stop like a human
             sleep(2)
-
       
-               
-
-
+      
