@@ -10,7 +10,8 @@ from re import findall, sub
 from lxml import html
 from time import sleep
 from selenium import webdriver
-import json
+#import json
+import pandas as pd
 
 def parse(url):
     # the path of chrome driver
@@ -49,13 +50,14 @@ def parse(url):
                 sleep(10)
                 
     # scroll down pages
-    for i in range(0,200): # here you will need to tune to see exactly how many scrolls you need
+    for i in range(0,200): # tune to see exactly how many scrolls need
           response.execute_script('window.scrollBy(0, 2000)')
           sleep(1)
 
     parser = html.fromstring(response.page_source,response.current_url)
     hotels = parser.xpath('//div[@class="hotel-wrap"]')
-    for hotel in hotels[:10000]: #Replace with 1 to just get the cheapest hotel
+    dfs = list()
+    for hotel in hotels[:8000]: #Replace with 1 to just get the cheapest hotel
         hotelName = hotel.xpath('.//h3/a')
         hotelName = hotelName[0].text_content() if hotelName else None
         price = hotel.xpath('.//div[@class="price"]/a//ins')
@@ -89,8 +91,16 @@ def parse(url):
                     "countryName":countryName,
         }
         # write to json
-        with open('tripadv_prices.json', 'a') as writeFile:
-            json.dump(item, writeFile, sort_keys=True, indent=4)
+        #with open('tripadv_prices.json', 'a') as writeFile:
+        #    json.dump(item, writeFile, sort_keys=True, indent=4)
+        
+        #df = pd.read_json(item.text)
+        df = pd.DataFrame(item, index = [0])
+        dfs.append(df)
+        output = pd.concat(dfs)
+    return output
+        
         
 if __name__ == '__main__':
-    parse('http://www.hotels.com')
+    results = parse('http://www.hotels.com')
+    results.to_csv('./tripadv_prices.csv', index = False)
