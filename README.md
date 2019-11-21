@@ -1,4 +1,4 @@
-# ANLY501_Project
+
 AirBnb Price Analysis
 
 This project is a part of ANLY-501, Introduction to Data Science, at Georgetown University.
